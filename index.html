@@ -4,223 +4,253 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>ระดับน้ำแม่สาย</title>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f9f9f9;
-      color: #333;
+      font-family: 'Prompt', sans-serif;
+      margin: 0;
       padding: 2rem;
-      max-width: 900px;
-      margin: auto;
+      background: linear-gradient(135deg, #7bd6f9, #1a65c5);
+      color: #222;
     }
+
     h2 {
-      color: #2c3e50;
-      margin-bottom: 1rem;
-      border-left: 5px solid #3498db;
-      padding-left: 0.5rem;
+      color: #fff;
+      margin-bottom: 2rem;
+      text-align: center;
     }
+
     .info-box {
       background: #fff;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-      padding: 1.5rem;
-      margin-top: 2rem;
+      border-radius: 20px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      padding: 2rem;
+      margin-bottom: 2.5rem;
+      transition: transform 0.2s ease-in-out;
     }
+
+    .info-box:hover {
+      transform: translateY(-5px);
+    }
+
     .label {
       font-weight: bold;
-      color: #555;
+      color: #1a65c5;
     }
+
     .value {
-      font-size: 1.5rem;
+      font-size: 1.6rem;
       margin-bottom: 0.5rem;
     }
+
     .status {
       margin-top: 1rem;
       font-weight: bold;
     }
+
     .status.good {
       color: #27ae60;
     }
+
     .status.bad {
       color: #e74c3c;
     }
+
     .note {
       font-size: 0.9rem;
       margin-top: 0.5rem;
-      color: #888;
+      color: #666;
     }
+
     canvas {
+      margin-top: 2rem;
+    }
+
+    .btn {
+      display: inline-block;
       margin-top: 1rem;
+      padding: 0.7rem 1.5rem;
+      background-color: #ffee34;
+      color: #222;
+      border-radius: 30px;
+      border: none;
+      font-weight: bold;
+      text-decoration: none;
+      transition: background-color 0.3s;
+    }
+
+    .btn:hover {
+      background-color: #fff4d4;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
 
-<h2>ระดับน้ำจากสถานีตรวจวัด</h2>
+  <h2>ระดับน้ำจากสถานีตรวจวัด</h2>
 
-<div class="info-box">
-  <div class="label">สถานี: สะพานมิตรภาพแม่สายแห่งที่ 1</div>
-  <div class="label">ระดับน้ำล่าสุด</div>
-  <div id="level-1" class="value">กำลังโหลด...</div>
-  <div class="label">เวลา</div>
-  <div id="time-1" class="value">-</div>
-  <div class="label">ระดับตลิ่ง</div>
-  <div class="value">396.591 เมตร</div>
-  <div id="status-1" class="status"></div>
-  <div class="note">ข้อมูลจาก ThaiWater API</div>
-  <canvas id="chart-1" height="80"></canvas>
-</div>
+  <div class="info-box">
+    <div class="label">สถานี: สะพานมิตรภาพแม่สายแห่งที่ 1</div>
+    <div class="label">ระดับน้ำล่าสุด</div>
+    <div id="level-1" class="value">กำลังโหลด...</div>
+    <div class="label">เวลา</div>
+    <div id="time-1" class="value">-</div>
+    <div class="label">ระดับตลิ่ง</div>
+    <div class="value">396.591 เมตร</div>
+    <div id="status-1" class="status"></div>
+    <div class="note">ข้อมูลจาก ThaiWater API</div>
+    <canvas id="chart-1" height="80"></canvas>
+  </div>
 
-<div class="info-box">
-  <div class="label">สถานี: บ้านโจตาดา สาธารณรัฐแห่งสหภาพพม่า</div>
-  <div class="label">ระดับน้ำล่าสุด</div>
-  <div id="level-2" class="value">กำลังโหลด...</div>
-  <div class="label">เวลา</div>
-  <div id="time-2" class="value">-</div>
-  <div class="label">ระดับตลิ่ง</div>
-  <div class="value">514.400 เมตร</div>
-  <div id="status-2" class="status"></div>
-  <div class="note">* หากระดับน้ำเกิน 513.64 เมตร ควรเฝ้าระวังน้ำท่วมพื้นที่แม่สาย</div>
-  <div class="note">ข้อมูลจาก ThaiWater API</div>
-  <canvas id="chart-2" height="80"></canvas>
-</div>
+  <div class="info-box">
+    <div class="label">สถานี: บ้านโจตาดา สาธารณรัฐแห่งสหภาพพม่า</div>
+    <div class="label">ระดับน้ำล่าสุด</div>
+    <div id="level-2" class="value">กำลังโหลด...</div>
+    <div class="label">เวลา</div>
+    <div id="time-2" class="value">-</div>
+    <div class="label">ระดับตลิ่ง</div>
+    <div class="value">514.400 เมตร</div>
+    <div id="status-2" class="status"></div>
+    <div class="note">* หากระดับน้ำเกิน 513.64 เมตร ควรเฝ้าระวังน้ำท่วมพื้นที่แม่สาย</div>
+    <div class="note">ข้อมูลจาก ThaiWater API</div>
+    <canvas id="chart-2" height="80"></canvas>
+  </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.4.0"></script>
-<script>
-  function getDateTimeString(hoursAgo = 0) {
-    const now = new Date(Date.now() - hoursAgo * 60 * 60 * 1000);
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    const hour = String(now.getHours()).padStart(2, '0');
-    const minute = String(now.getMinutes()).padStart(2, '0');
-    return `${year}-${month}-${day} ${hour}:${minute}`;
-  }
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.4.0"></script>
+  <script>
+    function getDateTimeString(hoursAgo = 0) {
+      const now = new Date(Date.now() - hoursAgo * 60 * 60 * 1000);
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const hour = String(now.getHours()).padStart(2, '0');
+      const minute = String(now.getMinutes()).padStart(2, '0');
+      return `${year}-${month}-${day} ${hour}:${minute}`;
+    }
 
-  async function fetchWaterLevel(stationId, bankLevel, index, specialAlertLevel = null) {
-    const endDate = getDateTimeString(0);
-    const startDate = getDateTimeString(5);
-    const url = `https://api-v3.thaiwater.net/api/v1/thaiwater30/public/waterlevel_graph?station_type=tele_waterlevel&station_id=${stationId}&start_date=${encodeURIComponent(startDate)}&end_date=${encodeURIComponent(endDate)}`;
+    async function fetchWaterLevel(stationId, bankLevel, index, specialAlertLevel = null) {
+      const endDate = getDateTimeString(0);
+      const startDate = getDateTimeString(5);
+      const url = `https://api-v3.thaiwater.net/api/v1/thaiwater30/public/waterlevel_graph?station_type=tele_waterlevel&station_id=${stationId}&start_date=${encodeURIComponent(startDate)}&end_date=${encodeURIComponent(endDate)}`;
 
-    try {
-      const res = await fetch(url);
-      const json = await res.json();
-      const graphData = json?.data?.graph_data;
+      try {
+        const res = await fetch(url);
+        const json = await res.json();
+        const graphData = json?.data?.graph_data;
+        const latestValid = [...graphData].reverse().find(d => d.value !== null);
 
-      const latestValid = [...graphData].reverse().find(d => d.value !== null);
+        if (latestValid) {
+          const waterLevel = latestValid.value;
+          document.getElementById(`level-${index}`).innerText = `${waterLevel} เมตร`;
+          document.getElementById(`time-${index}`).innerText = latestValid.datetime;
 
-      if (latestValid) {
-        const waterLevel = latestValid.value;
-        document.getElementById(`level-${index}`).innerText = `${waterLevel} เมตร`;
-        document.getElementById(`time-${index}`).innerText = latestValid.datetime;
-
-        const statusElem = document.getElementById(`status-${index}`);
-        if (waterLevel >= bankLevel) {
-          statusElem.innerText = "⚠️ ระดับน้ำสูงถึงหรือเกินระดับตลิ่งแล้ว!";
-          statusElem.className = "status bad";
-        } else {
-          const diff = (bankLevel - waterLevel).toFixed(2);
-          statusElem.innerText = `✅ ระดับน้ำต่ำกว่าตลิ่งอยู่ ${diff} เมตร`;
-          statusElem.className = "status good";
+          const statusElem = document.getElementById(`status-${index}`);
+          if (waterLevel >= bankLevel) {
+            statusElem.innerText = "⚠️ ระดับน้ำสูงถึงหรือเกินระดับตลิ่งแล้ว!";
+            statusElem.className = "status bad";
+          } else {
+            const diff = (bankLevel - waterLevel).toFixed(2);
+            statusElem.innerText = `✅ ระดับน้ำต่ำกว่าตลิ่งอยู่ ${diff} เมตร`;
+            statusElem.className = "status good";
+          }
         }
-      }
 
-      const labels = graphData.map(d => d.datetime);
-      const values = graphData.map(d => d.value);
-      const validValues = values.filter(v => v !== null);
-      const latestPointIndex = values.lastIndexOf(validValues[validValues.length - 1]);
-      const minY = Math.floor(Math.min(...validValues) * 10) / 10 - 0.1;
-      const maxY = Math.ceil(Math.max(...validValues.concat([bankLevel])) * 10) / 10 + 0.1;
+        const labels = graphData.map(d => d.datetime);
+        const values = graphData.map(d => d.value);
+        const validValues = values.filter(v => v !== null);
+        const latestPointIndex = values.lastIndexOf(validValues[validValues.length - 1]);
+        const minY = Math.floor(Math.min(...validValues) * 10) / 10 - 0.1;
+        const maxY = Math.ceil(Math.max(...validValues.concat([bankLevel])) * 10) / 10 + 0.1;
 
-      const ctx = document.getElementById(`chart-${index}`).getContext('2d');
-      new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: labels,
-          datasets: [{
-            label: 'ระดับน้ำ (เมตร)',
-            data: values,
-            borderColor: '#3498db',
-            backgroundColor: 'rgba(52, 152, 219, 0.2)',
-            fill: true,
-            tension: 0.3,
-            pointRadius: 2
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { display: true },
-            title: {
-              display: true,
-              text: 'แนวโน้มระดับน้ำย้อนหลัง 5 ชั่วโมง'
-            },
-            tooltip: {
-              enabled: true,
-              callbacks: {
-                label: function(context) {
-                  return `เวลา: ${context.label}, ระดับน้ำ: ${context.formattedValue} เมตร`;
+        const ctx = document.getElementById(`chart-${index}`).getContext('2d');
+        new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'ระดับน้ำ (เมตร)',
+              data: values,
+              borderColor: '#1a65c5',
+              backgroundColor: 'rgba(26, 101, 197, 0.2)',
+              fill: true,
+              tension: 0.3,
+              pointRadius: 2
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { display: true },
+              title: {
+                display: true,
+                text: 'แนวโน้มระดับน้ำย้อนหลัง 5 ชั่วโมง'
+              },
+              tooltip: {
+                enabled: true,
+                callbacks: {
+                  label: function(context) {
+                    return `เวลา: ${context.label}, ระดับน้ำ: ${context.formattedValue} เมตร`;
+                  }
                 }
-              }
-            },
-            annotation: {
-              annotations: {
-                line1: {
-                  type: 'line',
-                  yMin: bankLevel,
-                  yMax: bankLevel,
-                  borderColor: '#ff0000',
-                  borderWidth: 2,
-                  label: {
-                    content: `ระดับตลิ่ง ${bankLevel}`,
-                    enabled: true,
-                    position: 'start', // แก้จาก 'end' เป็น 'start'
-                    backgroundColor: 'transparent',
-                    color: '#ff0000',
-                    font: {
-                      weight: 'bold',
-                      size: 13
-                    },
-                    xAdjust: -10, // แก้จาก 60 เป็น -10
-                    yAdjust: -6
+              },
+              annotation: {
+                annotations: {
+                  bankline: {
+                    type: 'line',
+                    yMin: bankLevel,
+                    yMax: bankLevel,
+                    borderColor: '#ff0000',
+                    borderWidth: 2,
+                    label: {
+                      content: `ระดับตลิ่ง ${bankLevel}`,
+                      enabled: true,
+                      position: 'end',
+                      backgroundColor: 'transparent',
+                      color: '#ff0000',
+                      font: {
+                        weight: 'bold',
+                        size: 13
+                      },
+                      xAdjust: 50,
+                      yAdjust: -6
+                    }
                   }
                 }
               }
-            }
-          },
-          scales: {
-            y: {
-              min: minY,
-              max: maxY,
-              title: { display: true, text: 'ระดับน้ำ (ม.)' }
             },
-            x: {
-              title: { display: true, text: 'เวลา' }
-            }
-          },
-          elements: {
-            point: {
-              radius: function(context) {
-                return context.dataIndex === latestPointIndex ? 6 : 2;
+            scales: {
+              y: {
+                min: minY,
+                max: maxY,
+                title: { display: true, text: 'ระดับน้ำ (ม.)' }
               },
-              backgroundColor: function(context) {
-                return context.dataIndex === latestPointIndex ? '#e74c3c' : '#3498db';
+              x: {
+                title: { display: true, text: 'เวลา' }
+              }
+            },
+            elements: {
+              point: {
+                radius: function(context) {
+                  return context.dataIndex === latestPointIndex ? 6 : 2;
+                },
+                backgroundColor: function(context) {
+                  return context.dataIndex === latestPointIndex ? '#e74c3c' : '#1a65c5';
+                }
               }
             }
           }
-        }
-      });
+        });
 
-    } catch (e) {
-      document.getElementById(`level-${index}`).innerText = "เกิดข้อผิดพลาด";
+      } catch (e) {
+        document.getElementById(`level-${index}`).innerText = "เกิดข้อผิดพลาด";
+      }
     }
-  }
 
-  window.onload = () => {
-    fetchWaterLevel("1225531", 396.591, 1);
-    fetchWaterLevel("1225528", 514.400, 2, 513.640);
-  };
-</script>
+    window.onload = () => {
+      fetchWaterLevel("1225531", 396.591, 1);
+      fetchWaterLevel("1225528", 514.400, 2, 513.640);
+    };
+  </script>
 </body>
 </html>
