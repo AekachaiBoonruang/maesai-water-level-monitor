@@ -10,7 +10,7 @@
       background: #f9f9f9;
       color: #333;
       padding: 2rem;
-      max-width: 700px;
+      max-width: 900px;
       margin: auto;
     }
     h2 {
@@ -49,51 +49,47 @@
       margin-top: 0.5rem;
       color: #888;
     }
+    canvas {
+      margin-top: 1rem;
+    }
   </style>
 </head>
 <body>
 
-  <h2>ระดับน้ำสถานีแม่สาย</h2>
+  <h2>ระดับน้ำจากสถานีตรวจวัด</h2>
 
-  <!-- สถานี 1: แม่สาย -->
   <div class="info-box">
     <div class="label">สถานี: สะพานมิตรภาพแม่สายแห่งที่ 1</div>
     <div class="label">ระดับน้ำล่าสุด</div>
     <div id="level-1" class="value">กำลังโหลด...</div>
-
     <div class="label">เวลา</div>
     <div id="time-1" class="value">-</div>
-
     <div class="label">ระดับตลิ่ง</div>
     <div id="bank-1" class="value">396.591 เมตร</div>
-
     <div id="status-1" class="status"></div>
-
     <div class="note">ข้อมูลจาก ThaiWater API</div>
+    <canvas id="chart-1" height="100"></canvas>
   </div>
 
-  <!-- สถานี 2: บ้านโจตาดา -->
   <div class="info-box">
     <div class="label">สถานี: บ้านโจตาดา สาธารณรัฐแห่งสหภาพพม่า</div>
     <div class="label">ระดับน้ำล่าสุด</div>
     <div id="level-2" class="value">กำลังโหลด...</div>
-
     <div class="label">เวลา</div>
     <div id="time-2" class="value">-</div>
-
     <div class="label">ระดับตลิ่ง</div>
     <div id="bank-2" class="value">514.400 เมตร</div>
-
     <div id="status-2" class="status"></div>
     <div id="note-2" class="note"></div>
-
     <div class="note">* หากระดับน้ำเกิน 513.64 เมตร ควรเฝ้าระวังน้ำท่วมพื้นที่แม่สาย</div>
     <div class="note">ข้อมูลจาก ThaiWater API</div>
+    <canvas id="chart-2" height="100"></canvas>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
-    function getNowDateTimeString() {
-      const now = new Date();
+    function getDateTimeString(hoursAgo = 0) {
+      const now = new Date(Date.now() - hoursAgo * 60 * 60 * 1000);
       const year = now.getFullYear();
       const month = String(now.getMonth() + 1).padStart(2, '0');
       const day = String(now.getDate()).padStart(2, '0');
@@ -103,20 +99,21 @@
     }
 
     async function fetchWaterLevel(stationId, bankLevel, index, specialAlertLevel = null) {
-      const endDate = getNowDateTimeString();
-      const url = `https://api-v3.thaiwater.net/api/v1/thaiwater30/public/waterlevel_graph?station_type=tele_waterlevel&station_id=${stationId}&start_date=2025-06-28&end_date=${encodeURIComponent(endDate)}`;
+      const endDate = getDateTimeString(0);
+      const startDate = getDateTimeString(5);
+      const url = `https://api-v3.thaiwater.net/api/v1/thaiwater30/public/waterlevel_graph?station_type=tele_waterlevel&station_id=${stationId}&start_date=${encodeURIComponent(startDate)}&end_date=${encodeURIComponent(endDate)}`;
 
       try {
         const res = await fetch(url);
         const json = await res.json();
         const graphData = json?.data?.graph_data;
 
-        if (graphData && graphData.length > 0) {
-          const latest = graphData[graphData.length - 1];
-          const waterLevel = latest.value;
+        const latestValid = [...graphData].reverse().find(d => d.value !== null);
 
+        if (latestValid) {
+          const waterLevel = latestValid.value;
           document.getElementById(`level-${index}`).innerText = `${waterLevel} เมตร`;
-          document.getElementById(`time-${index}`).innerText = latest.datetime;
+          document.getElementById(`time-${index}`).innerText = latestValid.datetime;
 
           const statusElem = document.getElementById(`status-${index}`);
           const noteElem = document.getElementById(`note-${index}`);
@@ -130,26 +127,87 @@
             statusElem.className = "status good";
           }
 
-          // เงื่อนไขพิเศษสำหรับบ้านโจตาดา
           if (specialAlertLevel && waterLevel > specialAlertLevel) {
             noteElem.innerText = "⚠️ ควรเฝ้าระวังน้ำท่วมพื้นที่แม่สาย!";
             noteElem.style.color = "orange";
             noteElem.style.fontWeight = "bold";
           }
-
         } else {
-          document.getElementById(`level-${index}`).innerText = "ไม่พบข้อมูล";
+          document.getElementById(`level-${index}`).innerText = "ไม่พบข้อมูลที่มีค่า";
         }
+
+        const labels = graphData.map(d => d.datetime);
+        const values = graphData.map(d => d.value);
+        const validValues = values.filter(v => v !== null);
+
+        const latestPointValue = validValues[validValues.length - 1];
+        const latestPointIndex = values.lastIndexOf(latestPointValue);
+
+        const minY = Math.floor(Math.min(...validValues) * 10) / 10 - 0.1;
+        const maxY = Math.ceil(Math.max(...validValues) * 10) / 10 + 0.1;
+
+        const ctx = document.getElementById(`chart-${index}`).getContext('2d');
+        new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'ระดับน้ำ (เมตร)',
+              data: values,
+              borderColor: '#3498db',
+              backgroundColor: 'rgba(52, 152, 219, 0.2)',
+              fill: true,
+              tension: 0.3,
+              pointRadius: (ctx) => ctx.dataIndex === latestPointIndex ? 6 : 2,
+              pointBackgroundColor: (ctx) => ctx.dataIndex === latestPointIndex ? '#e74c3c' : '#3498db'
+            }]
+          },
+          options: {
+            responsive: true,
+            scales: {
+              y: {
+                min: minY,
+                max: maxY,
+                title: { display: true, text: 'ระดับน้ำ (ม.)' }
+              },
+              x: {
+                title: { display: true, text: 'เวลา' }
+              }
+            },
+            plugins: {
+              title: {
+                display: true,
+                text: 'แนวโน้มระดับน้ำย้อนหลัง 5 ชั่วโมง'
+              },
+              tooltip: {
+                enabled: true,
+                mode: 'nearest',
+                intersect: false,
+                external: function(context) {
+                  const tooltip = context.tooltip;
+                  if (tooltip.dataPoints?.[0]?.dataIndex === latestPointIndex) {
+                    tooltip.opacity = 1;
+                  }
+                },
+                callbacks: {
+                  label: function(context) {
+                    return `เวลา: ${context.label}, ระดับน้ำ: ${context.formattedValue} เมตร`;
+                  }
+                }
+              }
+            }
+          }
+        });
+
       } catch (e) {
         document.getElementById(`level-${index}`).innerText = "เกิดข้อผิดพลาด";
       }
     }
 
     window.onload = () => {
-      fetchWaterLevel("1225531", 396.591, 1);             // แม่สาย
-      fetchWaterLevel("1225528", 514.400, 2, 513.640);    // บ้านโจตาดา
+      fetchWaterLevel("1225531", 396.591, 1);
+      fetchWaterLevel("1225528", 514.400, 2, 513.640);
     };
   </script>
-
 </body>
 </html>
