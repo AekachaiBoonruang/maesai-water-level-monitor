@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ระดับน้ำสถานีแม่สาย</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f9f9f9;
+      color: #333;
+      padding: 2rem;
+      max-width: 700px;
+      margin: auto;
+    }
+    h2 {
+      color: #2c3e50;
+      margin-bottom: 1rem;
+      border-left: 5px solid #3498db;
+      padding-left: 0.5rem;
+    }
+    .info-box {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      padding: 1.5rem;
+      margin-top: 2rem;
+    }
+    .label {
+      font-weight: bold;
+      color: #555;
+    }
+    .value {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .status {
+      margin-top: 1rem;
+      font-weight: bold;
+    }
+    .status.good {
+      color: #27ae60;
+    }
+    .status.bad {
+      color: #e74c3c;
+    }
+    .note {
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>ระดับน้ำสถานีแม่สาย</h2>
+
+  <!-- สถานี 1: แม่สาย -->
+  <div class="info-box">
+    <div class="label">สถานี: สะพานมิตรภาพแม่สายแห่งที่ 1</div>
+    <div class="label">ระดับน้ำล่าสุด</div>
+    <div id="level-1" class="value">กำลังโหลด...</div>
+
+    <div class="label">เวลา</div>
+    <div id="time-1" class="value">-</div>
+
+    <div class="label">ระดับตลิ่ง</div>
+    <div id="bank-1" class="value">396.591 เมตร</div>
+
+    <div id="status-1" class="status"></div>
+
+    <div class="note">ข้อมูลจาก ThaiWater API</div>
+  </div>
+
+  <!-- สถานี 2: บ้านโจตาดา -->
+  <div class="info-box">
+    <div class="label">สถานี: บ้านโจตาดา สาธารณรัฐแห่งสหภาพพม่า</div>
+    <div class="label">ระดับน้ำล่าสุด</div>
+    <div id="level-2" class="value">กำลังโหลด...</div>
+
+    <div class="label">เวลา</div>
+    <div id="time-2" class="value">-</div>
+
+    <div class="label">ระดับตลิ่ง</div>
+    <div id="bank-2" class="value">514.400 เมตร</div>
+
+    <div id="status-2" class="status"></div>
+    <div id="note-2" class="note"></div>
+
+    <div class="note">* หากระดับน้ำเกิน 513.64 เมตร ควรเฝ้าระวังน้ำท่วมพื้นที่แม่สาย</div>
+    <div class="note">ข้อมูลจาก ThaiWater API</div>
+  </div>
+
+  <script>
+    function getNowDateTimeString() {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const hour = String(now.getHours()).padStart(2, '0');
+      const minute = String(now.getMinutes()).padStart(2, '0');
+      return `${year}-${month}-${day} ${hour}:${minute}`;
+    }
+
+    async function fetchWaterLevel(stationId, bankLevel, index, specialAlertLevel = null) {
+      const endDate = getNowDateTimeString();
+      const url = `https://api-v3.thaiwater.net/api/v1/thaiwater30/public/waterlevel_graph?station_type=tele_waterlevel&station_id=${stationId}&start_date=2025-06-28&end_date=${encodeURIComponent(endDate)}`;
+
+      try {
+        const res = await fetch(url);
+        const json = await res.json();
+        const graphData = json?.data?.graph_data;
+
+        if (graphData && graphData.length > 0) {
+          const latest = graphData[graphData.length - 1];
+          const waterLevel = latest.value;
+
+          document.getElementById(`level-${index}`).innerText = `${waterLevel} เมตร`;
+          document.getElementById(`time-${index}`).innerText = latest.datetime;
+
+          const statusElem = document.getElementById(`status-${index}`);
+          const noteElem = document.getElementById(`note-${index}`);
+
+          if (waterLevel >= bankLevel) {
+            statusElem.innerText = "⚠️ ระดับน้ำสูงถึงหรือเกินระดับตลิ่งแล้ว!";
+            statusElem.className = "status bad";
+          } else {
+            const diff = (bankLevel - waterLevel).toFixed(2);
+            statusElem.innerText = `✅ ระดับน้ำต่ำกว่าตลิ่งอยู่ ${diff} เมตร`;
+            statusElem.className = "status good";
+          }
+
+          // เงื่อนไขพิเศษสำหรับบ้านโจตาดา
+          if (specialAlertLevel && waterLevel > specialAlertLevel) {
+            noteElem.innerText = "⚠️ ควรเฝ้าระวังน้ำท่วมพื้นที่แม่สาย!";
+            noteElem.style.color = "orange";
+            noteElem.style.fontWeight = "bold";
+          }
+
+        } else {
+          document.getElementById(`level-${index}`).innerText = "ไม่พบข้อมูล";
+        }
+      } catch (e) {
+        document.getElementById(`level-${index}`).innerText = "เกิดข้อผิดพลาด";
+      }
+    }
+
+    window.onload = () => {
+      fetchWaterLevel("1225531", 396.591, 1);             // แม่สาย
+      fetchWaterLevel("1225528", 514.400, 2, 513.640);    // บ้านโจตาดา
+    };
+  </script>
+
+</body>
+</html>
