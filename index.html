@@ -1,227 +1,104 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>ระดับน้ำแม่สาย</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0b1f33">
+  <title>เฝ้าระวังน้ำแม่สาย</title>
+  <meta name="description" content="ติดตามระดับน้ำบ้านโจตาดาและสะพานมิตรภาพแม่สาย พร้อมแนวโน้มและเวลาประมาณถึงตลิ่ง">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
   <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f9f9f9;
-      color: #333;
-      padding: 2rem;
-      max-width: 1300px;
-      margin: auto;
-      background: linear-gradient(to bottom right, #47a1f5, #7bd6f9);
-    }
-    h2 {
-      color: #2c3e50;
-      margin-bottom: 1rem;
-      text-align: center;
-      border-left: none;
-    }
-    .info-box {
-      background: #fff;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-      padding: 1.5rem;
-      margin-top: 2rem;
-    }
-    .label {
-      font-weight: bold;
-      color: #555;
-    }
-    .value {
-      font-size: 1.5rem;
-      margin-bottom: 0.5rem;
-    }
-    .status {
-      margin-top: 1rem;
-      font-weight: bold;
-    }
-    .status.good {
-      color: #27ae60;
-    }
-    .status.bad {
-      color: #e74c3c;
-    }
-    .note {
-      font-size: 0.9rem;
-      margin-top: 0.5rem;
-      color: #888;
-    }
-    canvas {
-      margin-top: 1rem;
-    }
+    :root{--navy:#0b1f33;--ink:#172638;--muted:#637083;--line:#dce5ec;--bg:#edf4f8;--card:#fff;--blue:#1579b8;--green:#16845b;--yellow:#a56b00;--orange:#c84f14;--red:#b42318;--shadow:0 12px 34px rgba(12,38,60,.10)}
+    *{box-sizing:border-box} body{margin:0;background:linear-gradient(180deg,#dbeef8 0,#f3f7f9 360px);color:var(--ink);font-family:"Noto Sans Thai","Leelawadee UI",Tahoma,sans-serif;font-size:16px;line-height:1.5}
+    button{font:inherit} .wrap{width:min(1040px,100%);margin:auto;padding:18px 16px 56px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}.brand{display:flex;align-items:center;gap:10px}.brand-mark{width:42px;height:42px;border-radius:13px;background:var(--navy);color:white;display:grid;place-items:center;font-weight:900}.brand h1{font-size:1.15rem;margin:0;line-height:1.2}.updated{font-size:.82rem;color:var(--muted);text-align:right}
+    .alert{border-radius:22px;padding:20px;color:white;box-shadow:var(--shadow);position:relative;overflow:hidden}.alert:after{content:"";position:absolute;width:180px;height:180px;border:28px solid rgba(255,255,255,.10);border-radius:50%;right:-70px;top:-80px}.alert.red{background:linear-gradient(135deg,#8f1711,#c93629)}.alert.orange{background:linear-gradient(135deg,#9f3b10,#df6a24)}.alert.yellow{background:linear-gradient(135deg,#845800,#bd820a)}.alert.green{background:linear-gradient(135deg,#0c6745,#179164)}.eyebrow{font-weight:800;font-size:.85rem;letter-spacing:.03em;opacity:.9}.alert h2{font-size:clamp(1.55rem,5vw,2.3rem);line-height:1.15;margin:5px 0 8px}.alert p{margin:0;max-width:750px;font-size:1.02rem}.alert-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:18px;position:relative;z-index:1}.alert-stat{background:rgba(255,255,255,.12);padding:10px 12px;border-radius:13px}.alert-stat small{display:block;opacity:.82}.alert-stat strong{font-size:1.08rem}
+    .demo{display:flex;gap:8px;align-items:center;overflow:auto;padding:14px 0 4px}.demo-label{white-space:nowrap;color:var(--muted);font-size:.9rem}.demo button{border:1px solid var(--line);background:white;color:var(--ink);border-radius:999px;padding:8px 13px;white-space:nowrap;cursor:pointer}.demo button.active{background:var(--navy);color:white;border-color:var(--navy)}
+    .cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}.card{background:var(--card);border:1px solid rgba(20,60,90,.07);border-radius:20px;padding:18px;box-shadow:var(--shadow)}.station-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.station-name{font-weight:800}.station-sub{font-size:.82rem;color:var(--muted)}.pill{border-radius:999px;padding:5px 9px;font-size:.8rem;font-weight:800;background:#e7f1f7;color:#155879;white-space:nowrap}.pill.up{background:#fee9e7;color:var(--red)}.pill.down{background:#e4f5ed;color:var(--green)}.level{font-size:clamp(2rem,7vw,3.1rem);font-weight:900;letter-spacing:-.04em;margin:14px 0 2px;line-height:1}.unit{font-size:1rem;letter-spacing:0;font-weight:700}.bankline{color:var(--muted);font-size:.9rem}.metric-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:15px 0}.metric{background:#f2f6f8;border-radius:13px;padding:10px}.metric small{display:block;color:var(--muted)}.metric strong{font-size:1.08rem}.eta{border-left:4px solid var(--orange);background:#fff4ec;padding:10px 12px;border-radius:0 12px 12px 0;font-weight:700}.range-label{margin-top:14px;color:var(--muted);font-size:.84rem;font-weight:700}.chart-box{height:210px;margin-top:6px}
+    .action{margin-top:14px}.action h3{font-size:1rem;margin:0 0 8px}.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.step{background:#f4f7f9;border:1px solid var(--line);border-radius:14px;padding:12px;font-weight:700}.step span{display:block;font-size:.78rem;color:var(--muted);font-weight:500;margin-top:2px}.foot{font-size:.82rem;color:var(--muted);margin-top:14px;text-align:center}.stale{display:none;background:#fff1c8;color:#714d00;padding:10px 12px;border-radius:12px;margin:12px 0 0;font-weight:700}
+    @media(max-width:720px){.wrap{padding:12px 12px 42px}.brand-mark{width:38px;height:38px}.updated{font-size:.75rem}.alert{padding:18px 16px;border-radius:18px}.alert-grid{grid-template-columns:1fr}.alert-stat{display:flex;justify-content:space-between;align-items:center}.cards{grid-template-columns:1fr}.card{padding:16px;border-radius:18px}.steps{grid-template-columns:1fr}.chart-box{height:190px}}
   </style>
 </head>
 <body>
+<main class="wrap">
+  <header class="top">
+    <div class="brand"><div class="brand-mark">MS</div><div><h1>เฝ้าระวังน้ำแม่สาย</h1><div class="station-sub">ข้อมูลเพื่อช่วยตัดสินใจในชุมชน</div></div></div>
+    <div class="updated" id="updated">กำลังโหลดข้อมูล…</div>
+  </header>
 
-<h2>ระดับน้ำจากสถานีตรวจวัด</h2>
+  <section class="alert red" id="alertBox" aria-live="polite">
+    <div class="eyebrow" id="alertEyebrow">สถานการณ์ระดับสูงสุด</div>
+    <h2 id="alertTitle">เตรียมยกของและย้ายรถขึ้นที่สูง</h2>
+    <p id="alertText">ต้นน้ำบ้านโจตาดาเกินตลิ่งและยังเพิ่มขึ้น ขณะที่ระดับน้ำแม่สายเหลือระยะถึงตลิ่งน้อยมาก</p>
+    <div class="alert-grid">
+      <div class="alert-stat"><small>แม่สายห่างตลิ่ง</small><strong id="gapSummary">3 ซม.</strong></div>
+      <div class="alert-stat"><small>แนวโน้ม 1 ชั่วโมง</small><strong id="rateSummary">↑ เพิ่ม 14 ซม.</strong></div>
+      <div class="alert-stat"><small>คาดแตะตลิ่ง</small><strong id="etaSummary">ภายใน 15–30 นาที</strong></div>
+    </div>
+  </section>
+  <div class="stale" id="staleWarning">ข้อมูลล่าสุดเกิน 30 นาที กรุณาตรวจสอบประกาศจากทางการร่วมด้วย</div>
 
-<div class="info-box">
-  <div class="label">สถานี: สะพานมิตรภาพแม่สายแห่งที่ 1</div>
-  <div class="label">ระดับน้ำล่าสุด</div>
-  <div id="level-1" class="value">กำลังโหลด...</div>
-  <div class="label">เวลา</div>
-  <div id="time-1" class="value">-</div>
-  <div class="label">ระดับตลิ่ง</div>
-  <div class="value">397.591 เมตร</div>
-  <div id="status-1" class="status"></div>
-  <div class="note">ข้อมูลจาก ThaiWater API</div>
-  <canvas id="chart-1" height="150"></canvas>
-</div>
+  <nav class="demo" aria-label="เลือกสถานการณ์ตัวอย่าง">
+    <span class="demo-label">ดูตัวอย่าง:</span>
+    <button data-mode="live">ข้อมูลจริง</button>
+    <button data-mode="normal">ปกติ</button>
+    <button data-mode="watch">เฝ้าระวัง</button>
+    <button class="active" data-mode="critical">วิกฤต</button>
+  </nav>
 
-<div class="info-box">
-  <div class="label">สถานี: บ้านโจตาดา สาธารณรัฐแห่งสหภาพพม่า</div>
-  <div class="label">ระดับน้ำล่าสุด</div>
-  <div id="level-2" class="value">กำลังโหลด...</div>
-  <div class="label">เวลา</div>
-  <div id="time-2" class="value">-</div>
-  <div class="label">ระดับตลิ่ง</div>
-  <div class="value">514.400 เมตร</div>
-  <div id="status-2" class="status"></div>
-  <div class="note">* หากระดับน้ำเกิน 513.64 เมตร ควรเฝ้าระวังน้ำท่วมพื้นที่แม่สาย</div>
-  <div class="note">ข้อมูลจาก ThaiWater API</div>
-  <canvas id="chart-2" height="140"></canvas>
-</div>
+  <section class="cards">
+    <article class="card">
+      <div class="station-head"><div><div class="station-name">สะพานมิตรภาพแม่สายแห่งที่ 1</div><div class="station-sub">จุดเฝ้าระวังฝั่งแม่สาย</div></div><span class="pill up" id="maesaiTrend">↑ กำลังขึ้น</span></div>
+      <div class="level"><span id="maesaiLevel">397.56</span> <span class="unit">เมตร</span></div>
+      <div class="bankline">ระดับตลิ่ง 397.591 เมตร</div>
+      <div class="metric-row"><div class="metric"><small>เปลี่ยนแปลง 30 นาที</small><strong id="maesai30">+7 ซม.</strong></div><div class="metric"><small>เปลี่ยนแปลง 1 ชั่วโมง</small><strong id="maesai60">+14 ซม.</strong></div></div>
+      <div class="eta" id="maesaiEta">เหลือ 3 ซม. — อาจแตะตลิ่งภายใน 15–30 นาที</div>
+      <div class="range-label">แนวโน้มย้อนหลัง 24 ชั่วโมง</div>
+      <div class="chart-box"><canvas id="maesaiChart" aria-label="กราฟระดับน้ำแม่สายย้อนหลัง 24 ชั่วโมง"></canvas></div>
+    </article>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.4.0"></script>
+    <article class="card">
+      <div class="station-head"><div><div class="station-name">บ้านโจตาดา ประเทศเมียนมา</div><div class="station-sub">สถานีต้นน้ำสำหรับเตือนล่วงหน้า</div></div><span class="pill up" id="jotadaTrend">↑↑ ขึ้นเร็ว</span></div>
+      <div class="level"><span id="jotadaLevel">514.49</span> <span class="unit">เมตร</span></div>
+      <div class="bankline">ระดับตลิ่ง 514.400 เมตร · เกณฑ์เฝ้าระวังแม่สาย 513.640 เมตร</div>
+      <div class="metric-row"><div class="metric"><small>สูงกว่าตลิ่ง</small><strong id="jotadaGap">9 ซม.</strong></div><div class="metric"><small>เปลี่ยนแปลง 1 ชั่วโมง</small><strong id="jotada60">+17 ซม.</strong></div></div>
+      <div class="eta" id="jotadaEta">มีโอกาสส่งมวลน้ำลงสู่แม่สายเพิ่มเติม</div>
+      <div class="range-label">แนวโน้มย้อนหลัง 24 ชั่วโมง</div>
+      <div class="chart-box"><canvas id="jotadaChart" aria-label="กราฟระดับน้ำบ้านโจตาดาย้อนหลัง 24 ชั่วโมง"></canvas></div>
+    </article>
+  </section>
+
+  <section class="card action">
+    <h3>สิ่งที่ควรทำตอนนี้</h3>
+    <div class="steps"><div class="step">ย้ายรถขึ้นที่สูง<span>อย่ารอให้น้ำเข้าถนนหน้าบ้าน</span></div><div class="step">ยกปลั๊กและเครื่องใช้ไฟฟ้า<span>เตรียมยา เอกสาร และของจำเป็น</span></div><div class="step">ติดตามประกาศในพื้นที่<span>ข้อมูลนี้เป็นตัวช่วย ไม่ใช่คำสั่งอพยพ</span></div></div>
+  </section>
+  <p class="foot">ระดับและเวลาคาดการณ์เป็นข้อมูลประมาณการจากแนวโน้มล่าสุด โปรดติดตามประกาศจาก ปภ. อำเภอ และเทศบาลแม่สายร่วมด้วย</p>
+</main>
 <script>
-  function getDateTimeString(hoursAgo = 0) {
-    const now = new Date(Date.now() - hoursAgo * 60 * 60 * 1000);
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    const hour = String(now.getHours()).padStart(2, '0');
-    const minute = String(now.getMinutes()).padStart(2, '0');
-    return `${year}-${month}-${day} ${hour}:${minute}`;
-  }
-
-  async function fetchWaterLevel(stationId, bankLevel, index, specialAlertLevel = null) {
-    const endDate = getDateTimeString(0);
-    const startDate = getDateTimeString(5);
-    const url = `https://api-v3.thaiwater.net/api/v1/thaiwater30/public/waterlevel_graph?station_type=tele_waterlevel&station_id=${stationId}&start_date=${encodeURIComponent(startDate)}&end_date=${encodeURIComponent(endDate)}`;
-
-    try {
-      const res = await fetch(url);
-      const json = await res.json();
-      const graphData = json?.data?.graph_data;
-
-      const latestValid = [...graphData].reverse().find(d => d.value !== null);
-
-      if (latestValid) {
-        const waterLevel = latestValid.value;
-        document.getElementById(`level-${index}`).innerText = `${waterLevel} เมตร`;
-        document.getElementById(`time-${index}`).innerText = latestValid.datetime;
-
-        const statusElem = document.getElementById(`status-${index}`);
-        if (waterLevel >= bankLevel) {
-          statusElem.innerText = "⚠️ ระดับน้ำสูงถึงหรือเกินระดับตลิ่งแล้ว!";
-          statusElem.className = "status bad";
-        } else {
-          const diff = (bankLevel - waterLevel).toFixed(2);
-          statusElem.innerText = `✅ ระดับน้ำต่ำกว่าตลิ่งอยู่ ${diff} เมตร`;
-          statusElem.className = "status good";
-        }
-      }
-
-      const labels = graphData.map(d => d.datetime);
-      const values = graphData.map(d => d.value);
-      const validValues = values.filter(v => v !== null);
-      const latestPointIndex = values.lastIndexOf(validValues[validValues.length - 1]);
-      const minY = Math.floor(Math.min(...validValues) * 10) / 10 - 0.1;
-      const maxY = Math.ceil(Math.max(...validValues.concat([bankLevel])) * 10) / 10 + 0.1;
-
-      const ctx = document.getElementById(`chart-${index}`).getContext('2d');
-      new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: labels,
-          datasets: [{
-            label: 'ระดับน้ำ (เมตร)',
-            data: values,
-            borderColor: '#3498db',
-            backgroundColor: 'rgba(52, 152, 219, 0.2)',
-            fill: true,
-            tension: 0.3,
-            pointRadius: 2
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { display: true },
-            title: {
-              display: true,
-              text: 'แนวโน้มระดับน้ำย้อนหลัง 5 ชั่วโมง'
-            },
-            tooltip: {
-              enabled: true,
-              callbacks: {
-                label: function(context) {
-                  return `เวลา: ${context.label}, ระดับน้ำ: ${context.formattedValue} เมตร`;
-                }
-              }
-            },
-            annotation: {
-              annotations: {
-                line1: {
-                  type: 'line',
-                  yMin: bankLevel,
-                  yMax: bankLevel,
-                  borderColor: '#ff0000',
-                  borderWidth: 2,
-                  label: {
-                    content: `ระดับตลิ่ง ${bankLevel}`,
-                    enabled: true,
-                    position: 'start', // แก้จาก 'end' เป็น 'start'
-                    backgroundColor: 'transparent',
-                    color: '#ff0000',
-                    font: {
-                      weight: 'bold',
-                      size: 13
-                    },
-                    xAdjust: -10, // แก้จาก 60 เป็น -10
-                    yAdjust: -6
-                  }
-                }
-              }
-            }
-          },
-          scales: {
-            y: {
-              min: minY,
-              max: maxY,
-              title: { display: true, text: 'ระดับน้ำ (ม.)' }
-            },
-            x: {
-              title: { display: true, text: 'เวลา' }
-            }
-          },
-          elements: {
-            point: {
-              radius: function(context) {
-                return context.dataIndex === latestPointIndex ? 6 : 2;
-              },
-              backgroundColor: function(context) {
-                return context.dataIndex === latestPointIndex ? '#e74c3c' : '#3498db';
-              }
-            }
-          }
-        }
-      });
-
-    } catch (e) {
-      document.getElementById(`level-${index}`).innerText = "เกิดข้อผิดพลาด";
-    }
-  }
-
-  window.onload = () => {
-    fetchWaterLevel("1225531", 397.591, 1);
-    fetchWaterLevel("1225528", 514.400, 2, 513.640);
-  };
+const BANK={maesai:397.591,jotada:514.400}, ALERT_JOTADA=513.640;
+const endpoint=(id)=>{const end=new Date(),start=new Date(end-24*3600000),fmt=d=>{const p=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`};return `https://api-v3.thaiwater.net/api/v1/thaiwater30/public/waterlevel_graph?station_type=tele_waterlevel&station_id=${id}&start_date=${encodeURIComponent(fmt(start))}&end_date=${encodeURIComponent(fmt(end))}`};
+let charts={};
+function samples(last,delta60,count=145){return Array.from({length:count},(_,i)=>({datetime:new Date(Date.now()-(count-1-i)*10*60000).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'}),value:+(last-delta60*((count-1-i)/6)+Math.sin(i/3)*.008).toFixed(3)}))}
+const demo={
+ normal:{maesai:samples(396.72,-.03),jotada:samples(513.42,-.02)},
+ watch:{maesai:samples(397.28,.08),jotada:samples(513.89,.13)},
+ critical:{maesai:samples(397.56,.14),jotada:samples(514.49,.17)}
+};
+function valid(points){return points.filter(p=>p.value!==null&&Number.isFinite(Number(p.value))).map(p=>({...p,value:Number(p.value)}))}
+function delta(points,minutes){const p=valid(points),last=p.at(-1);if(!last)return 0;const idx=Math.max(0,p.length-1-Math.round(minutes/10));return last.value-p[idx].value}
+function cm(v){const n=Math.round(Math.abs(v)*100);return `${v>=0?'+':'−'}${n} ซม.`}
+function trend(rate){if(rate>.10)return ['↑↑ ขึ้นเร็ว','up'];if(rate>.015)return ['↑ กำลังขึ้น','up'];if(rate<-.015)return ['↓ กำลังลด','down'];return ['→ ทรงตัว',''];}
+function draw(id,points,bank){const p=valid(points),ctx=document.getElementById(id);charts[id]?.destroy();charts[id]=new Chart(ctx,{type:'line',data:{labels:p.map(x=>x.datetime.slice(-5)),datasets:[{data:p.map(x=>x.value),borderColor:'#1579b8',backgroundColor:'rgba(21,121,184,.12)',fill:true,tension:.25,pointRadius:0,borderWidth:2.5},{data:p.map(()=>bank),borderColor:'#b42318',pointRadius:0,borderDash:[6,5],borderWidth:1.5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.raw.toFixed(3)} เมตร`}}},scales:{x:{ticks:{maxTicksLimit:8,color:'#718096'},grid:{display:false}},y:{ticks:{color:'#718096'},grid:{color:'#e7edf1'}}}}})}
+function render(data,label='ข้อมูลตัวอย่าง'){
+ const m=valid(data.maesai),j=valid(data.jotada),ml=m.at(-1),jl=j.at(-1);if(!ml||!jl)return;const mr30=delta(m,30),mr60=delta(m,60),jr60=delta(j,60),gap=BANK.maesai-ml.value,jOver=jl.value-BANK.jotada;const mt=trend(mr60),jt=trend(jr60);
+ document.getElementById('maesaiLevel').textContent=ml.value.toFixed(3);document.getElementById('jotadaLevel').textContent=jl.value.toFixed(3);document.getElementById('maesai30').textContent=cm(mr30);document.getElementById('maesai60').textContent=cm(mr60);document.getElementById('jotada60').textContent=cm(jr60);document.getElementById('jotadaGap').textContent=jOver>=0?`${Math.round(jOver*100)} ซม.`:`ต่ำกว่า ${Math.round(-jOver*100)} ซม.`;
+ for(const [id,t] of [['maesaiTrend',mt],['jotadaTrend',jt]]){const el=document.getElementById(id);el.textContent=t[0];el.className=`pill ${t[1]}`}
+ let eta='ยังไม่มีแนวโน้มแตะตลิ่ง';if(gap<=0)eta='ระดับน้ำถึงหรือเกินตลิ่งแล้ว';else if(mr60>.005){const mins=Math.round(gap/mr60*60);eta=`เหลือ ${Math.max(0,Math.round(gap*100))} ซม. — อาจแตะตลิ่งภายใน ${mins<60?`${Math.max(5,mins-10)}–${mins+10} นาที`:`ประมาณ ${Math.round(mins/30)/2} ชั่วโมง`}`}
+ document.getElementById('maesaiEta').textContent=eta;document.getElementById('gapSummary').textContent=gap>0?`${Math.round(gap*100)} ซม.`:'ถึงตลิ่งแล้ว';document.getElementById('rateSummary').textContent=mr60>.015?`↑ เพิ่ม ${Math.round(mr60*100)} ซม.`:mr60<-.015?`↓ ลด ${Math.round(-mr60*100)} ซม.`:'ทรงตัว';document.getElementById('etaSummary').textContent=gap<=0?'ถึง/เกินตลิ่งแล้ว':eta.includes('ภายใน')?eta.split('ภายใน ')[1]:'ยังประเมินไม่ได้';
+ let state='green';if(jl.value>=ALERT_JOTADA||gap<=.50)state='yellow';if(jl.value>=BANK.jotada||gap<=.20)state='orange';if(gap<=.05||(jl.value>=BANK.jotada&&jr60>.08))state='red';const copy={green:['สถานการณ์ปกติ','ติดตามข้อมูลตามปกติ','ระดับน้ำทั้งสองสถานียังไม่เข้าเกณฑ์เฝ้าระวัง'],yellow:['เริ่มเฝ้าระวัง','ติดตามระดับน้ำอย่างใกล้ชิด','ต้นน้ำหรือระดับแม่สายเริ่มเข้าเกณฑ์เฝ้าระวัง'],orange:['เตรียมพร้อม','ผู้ที่อยู่พื้นที่ลุ่มต่ำควรเตรียมยกของ','ระดับต้นน้ำเกินตลิ่งหรือแม่สายเหลือระยะถึงตลิ่งน้อย'],red:['สถานการณ์ระดับสูงสุด','เตรียมยกของและย้ายรถขึ้นที่สูง','ต้นน้ำอยู่ในระดับสูงและแม่สายใกล้ถึงตลิ่งมาก โปรดติดตามประกาศในพื้นที่ทันที']}[state];const box=document.getElementById('alertBox');box.className=`alert ${state}`;document.getElementById('alertEyebrow').textContent=copy[0];document.getElementById('alertTitle').textContent=copy[1];document.getElementById('alertText').textContent=copy[2];document.getElementById('jotadaEta').textContent=jl.value>=BANK.jotada?'มีโอกาสส่งมวลน้ำลงสู่แม่สายเพิ่มเติม':'ต้นน้ำยังไม่ถึงระดับตลิ่ง';document.getElementById('updated').innerHTML=`${label}<br>${ml.datetime}`;draw('maesaiChart',m,BANK.maesai);draw('jotadaChart',j,BANK.jotada);
+ }
+async function live(){try{const [m,j]=await Promise.all([fetch(endpoint('1225531')).then(r=>r.json()),fetch(endpoint('1225528')).then(r=>r.json())]);const md=m?.data?.graph_data,jd=j?.data?.graph_data;if(!md?.length||!jd?.length)throw Error();render({maesai:md,jotada:jd},'อัปเดตล่าสุด');const t=new Date(valid(md).at(-1).datetime.replace(' ','T')).getTime();document.getElementById('staleWarning').style.display=Date.now()-t>30*60000?'block':'none'}catch(e){render(demo.critical,'โหมดตัวอย่าง · API ยังไม่พร้อม');document.getElementById('staleWarning').textContent='กำลังแสดงข้อมูลตัวอย่าง เนื่องจากยังเชื่อมข้อมูลจริงไม่ได้';document.getElementById('staleWarning').style.display='block'}}
+document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('[data-mode]').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById('staleWarning').style.display='none';b.dataset.mode==='live'?live():render(demo[b.dataset.mode],'ข้อมูลตัวอย่าง')}));
+render(demo.critical,'ข้อมูลตัวอย่าง');
 </script>
 </body>
 </html>
